@@ -8,9 +8,9 @@
 
 This is an example of how to create a custom TensorFlow op in C++ and use it in Python.
 
-The example op implemented here is the [logit function](https://en.wikipedia.org/wiki/Logit), which is the inverse of the sigmoid function.
-In other words, `logit(x) = log(x / (1 - x))` for `x` between 0 and 1 (inclusive).
-This function exists in SciPy as [`scipy.special.logit`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.logit.html), but it is currently not implemented as a native TensorFlow op.
+The op implemented here is the [logit function](https://en.wikipedia.org/wiki/Logit), `logit(x)=log(x/(1-x))` component-wise for `x` with entries between 0 and 1 (inclusive).
+This is the inverse of the sigmoid function, and can be used to turn a probability into a score (the log odds) between `-inf` and `inf`.
+The logit function is currently not implemented as a native TensorFlow op (a NumPy ndarray ufunc version exists in SciPy as [`scipy.special.logit`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.logit.html)). 
 
 ## Usage
 
@@ -23,9 +23,12 @@ cd TF-Custom-CXX-Op
 make
 ```
 
-Running `make` will download the required Python packages and compile the `_logit.so` shared library file, which is loaded by [`logit.py`](logit.py). It will also run the unit tests in [`logit_test.py`](logit_test.py).
+Running `make` will download the required Python packages and compile [`logit.cc`](logit.cc) into the shared library file `_logit.so`.
+This shared library is loaded by [`logit.py`](logit.py) to expose the op in Python.
+Running `make` also runs the unit tests in [`logit_test.py`](logit_test.py).
 
-Using the `logit` TensorFlow op in Python is then easy:
+Using the `logit` TensorFlow op in Python is then easy.
+For example, in a Python REPL:
 
 ```python
 >>> from logit import logit
@@ -33,11 +36,28 @@ Using the `logit` TensorFlow op in Python is then easy:
 <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
 ```
 
-This was tested to work on macOS 10.
+
+## Requirements
+
+This project was tested to work with the following setup.
+ 
+* macOS 10.15.3
+* Clang 11.0.0
+* Python 3.7.2
+* TensorFlow 2.1
 
 ## TODO
 
 - [ ] Add documentation.
+- [ ] Test on Linux/Windows.
 - [ ] Create pip-installable package.
 - [ ] Register gradient directly in C++.
 - [ ] Make a GPU op.
+
+## Acknowledgements
+
+Good reading about creating TensorFlow C++ ops:
+
+* The TensorFlow [Create an op](https://www.tensorflow.org/guide/create_op) guide.
+* The [tensorflow/custom-op](https://github.com/tensorflow/custom-op) repo.
+* David Stutz's blog post [Implementing Tensorflow Operations in C++ — Including Gradients](http://davidstutz.de/implementing-tensorflow-operations-in-c-including-gradients/) and [accompanying repo](https://github.com/davidstutz/tensorflow-cpp-op-example).

@@ -14,12 +14,12 @@
 # ==============================================================================
 """Unit tests for the logit op."""
 
+import itertools
+
 import numpy as np
 import tensorflow as tf
 from absl.testing import parameterized
 from scipy.special import logit as scipy_logit, expit
-from tensorflow.python.framework import test_util as tf_test_util
-from tensorflow.python.platform import test
 
 from logit import logit
 
@@ -43,15 +43,45 @@ _DTYPES = [
 ]
 
 
-def theoretical_logit_grad(x):
+# Helper functions
+
+
+def _theoretical_logit_grad(x):
   """Reference implementation for the gradient of the logit function."""
   return 1 / (x * (1.0 - x))
 
 
-class LogitTest(parameterized.TestCase, test.TestCase):
-  @parameterized.named_parameters(
-    tf_test_util.generate_combinations_with_testcase_name(
-        x=_XS_BETWEEN_0_AND_1, dtype=_DTYPES))
+def _named_parameters(**kwargs):
+  """Generate named parameter dicts for parameterized test cases.
+
+  E.g., _named_parameters(a=[0, 1], b=2) -> {'a': 0, 'b': 2}, {'a': 1, 'b': 2}
+  """
+  combinations = ([(k, v) for v in (vs if isinstance(vs, list) else [vs])]
+                  for k, vs in kwargs.items())
+  return list(map(dict, itertools.product(*combinations)))
+
+
+def _named_parameters_with_testcase_names(**kwargs):
+  """Generate named parameter dicts with test names for parameterized test
+  cases.
+  """
+  named_parameters = _named_parameters(**kwargs)
+  index_padding = len(str(len(named_parameters)))
+  for index, kwargs in enumerate(named_parameters):
+    name = f'_{index:0{index_padding}}'
+    for key, value in sorted(kwargs.items(), key=lambda pair: pair[0]):
+      key = ''.join(filter(str.isalnum, str(key)))
+      value = ''.join(filter(str.isalnum, str(value)))
+      name += f'_{key}_{value}'
+    kwargs['testcase_name'] = name
+  return named_parameters
+
+
+class LogitTest(parameterized.TestCase, tf.test.TestCase):
+  @parameterized.named_parameters(_named_parameters_with_testcase_names(
+    x=_XS_BETWEEN_0_AND_1,
+    dtype=_DTYPES),
+  )
   def test_compare_computation_with_scipy(self, x, dtype):
     if dtype is not None:
       x = tf.dtypes.cast(x, dtype=dtype)
@@ -60,18 +90,20 @@ class LogitTest(parameterized.TestCase, test.TestCase):
     self.assertAllClose(y, scipy_logit(x))
     self.assertAllClose(expit(y), x)
 
-  @parameterized.named_parameters(
-    tf_test_util.generate_combinations_with_testcase_name(
-      x=_XS_BETWEEN_0_AND_1, dtype=_DTYPES))
+  @parameterized.named_parameters(_named_parameters_with_testcase_names(
+    x=_XS_BETWEEN_0_AND_1,
+    dtype=_DTYPES),
+  )
   def test_numerical_gradient(self, x, dtype):
     if dtype is not None:
       x = tf.dtypes.cast(x, dtype=dtype)
     theoretical, numerical = tf.test.compute_gradient(logit, [x])
     self.assertAllClose(theoretical, numerical, rtol=1e-2, atol=1e-2)
 
-  @parameterized.named_parameters(
-    tf_test_util.generate_combinations_with_testcase_name(
-      x=_XS_BETWEEN_0_AND_1, dtype=_DTYPES))
+  @parameterized.named_parameters(_named_parameters_with_testcase_names(
+    x=_XS_BETWEEN_0_AND_1,
+    dtype=_DTYPES),
+  )
   def test_theoretical_gradient(self, x, dtype):
     if dtype is not None:
       x = tf.dtypes.cast(x, dtype=dtype)
@@ -82,7 +114,7 @@ class LogitTest(parameterized.TestCase, test.TestCase):
       y = logit(x)
 
     dy_dx = tape.gradient(y, x)
-    self.assertAllClose(dy_dx, theoretical_logit_grad(x))
+    self.assertAllClose(dy_dx, _theoretical_logit_grad(x))
 
   def test_extremes(self):
     self.assertTrue(tf.math.is_inf(logit(1.0)))
@@ -92,4 +124,4 @@ class LogitTest(parameterized.TestCase, test.TestCase):
 
 
 if __name__ == "__main__":
-  test.main()
+  tf.test.main()

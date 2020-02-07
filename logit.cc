@@ -19,6 +19,7 @@ limitations under the License.
 #include <type_traits>
 
 #include "tensorflow/core/framework/common_shape_fns.h"
+#include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
@@ -37,25 +38,14 @@ REGISTER_OP("LogitGrad")
   .Attr("T: {float, double}")
   .SetShapeFn(tensorflow::shape_inference::MergeBothInputsShapeFn);
 
-template <typename T>
-class LogitOp : public tensorflow::OpKernel {
+template<typename T>
+class LogitOp : public tensorflow::UnaryElementWiseOp<T, LogitOp<T>> {
 public:
-  explicit LogitOp(tensorflow::OpKernelConstruction *context) : tensorflow::OpKernel(context) {
-    const tensorflow::DataType dt = tensorflow::DataTypeToEnum<T>::v();
-    OP_REQUIRES_OK(context, context->MatchSignature({dt}, {dt}));
-  }
+  using tensorflow::UnaryElementWiseOp<T, LogitOp<T>>::UnaryElementWiseOp;
 
-  void Compute(tensorflow::OpKernelContext *context) override {
-    // Input
-    const tensorflow::Tensor &x = context->input(0);
-
-    // Output allocation
-    tensorflow::Tensor *y = nullptr;
-    OP_REQUIRES_OK(
-      context,
-      context->forward_input_or_allocate_output({0}, 0, x.shape(), &y)
-    );
-
+  void Operate(tensorflow::OpKernelContext* context,
+               const tensorflow::Tensor& x,
+               tensorflow::Tensor* y) {
     // Flat views into the input and output tensors
     auto x_flat = x.flat<T>();
     auto y_flat = y->flat<T>();
@@ -71,30 +61,16 @@ public:
   }
 };
 
-template <typename T>
-class LogitGradOp : public tensorflow::OpKernel {
+template<typename T>
+class LogitGradOp : public tensorflow::BinaryElementWiseOp<T, LogitGradOp<T>> {
 public:
-  explicit LogitGradOp(tensorflow::OpKernelConstruction *context) : tensorflow::OpKernel(context) {
-    const tensorflow::DataType dt = tensorflow::DataTypeToEnum<T>::v();
-    OP_REQUIRES_OK(context, context->MatchSignature({dt, dt}, {dt}));
-  }
+  using tensorflow::BinaryElementWiseOp<T, LogitGradOp<T>>::BinaryElementWiseOp;
 
-  void Compute(tensorflow::OpKernelContext *context) override {
-    // Input
-    const tensorflow::Tensor &x = context->input(0);
-    const tensorflow::Tensor &dz_dy = context->input(1);
-
-    if (!context->ValidateInputsAreSameShape(this)) {
-      return;
-    }
-
-    // Output allocation
-    tensorflow::Tensor *dz_dx = nullptr;
-    OP_REQUIRES_OK(
-      context,
-      context->forward_input_or_allocate_output({0, 1}, 0, x.shape(), &dz_dx)
-    );
-
+  template<int NDIMS>
+  void Operate(tensorflow::OpKernelContext* context,
+               const tensorflow::Tensor& x,
+               const tensorflow::Tensor& dz_dy,
+               tensorflow::Tensor* dz_dx) {
     // Flat views into the input and output tensors
     auto x_flat = x.flat<T>();
     auto dz_dy_flat = dz_dy.flat<T>();

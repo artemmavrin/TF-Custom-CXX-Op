@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
+#include "tensorflow/core/framework/tensor_types.h"
 
 REGISTER_OP("Logit")
   .Input("x: T")
@@ -38,7 +39,40 @@ REGISTER_OP("LogitGrad")
   .Attr("T: {float, double}")
   .SetShapeFn(tensorflow::shape_inference::MergeBothInputsShapeFn);
 
-template<typename T>
+namespace functor {
+  template <typename T>
+  class Logit {
+  public:
+    void operator()(typename tensorflow::TTypes<T>::ConstTensor x,
+                    typename tensorflow::TTypes<T>::Tensor y) {
+      T p;
+      const auto n = x.size();
+      typename std::remove_const<decltype(n)>::type i;
+      for (i = 0; i < n; ++i) {
+        p = x(i);
+        y(i) = log(p / (1 - p));
+      }
+    }
+  };
+
+  template <typename T>
+  class LogitGrad {
+  public:
+    void operator()(typename tensorflow::TTypes<T>::ConstFlat x,
+                    typename tensorflow::TTypes<T>::ConstFlat dz_dy,
+                    typename tensorflow::TTypes<T>::Flat dz_dx) {
+      T p;
+      const auto n = x.size();
+      typename std::remove_const<decltype(n)>::type i;
+      for (i = 0; i < n; ++i) {
+        p = x(i);
+        dz_dx(i) = dz_dy(i) / (p * (1 - p));
+      }
+    }
+  };
+}  // namespace functor
+
+template <typename T>
 class LogitOp : public tensorflow::UnaryElementWiseOp<T, LogitOp<T>> {
 public:
   using tensorflow::UnaryElementWiseOp<T, LogitOp<T>>::UnaryElementWiseOp;
@@ -46,22 +80,12 @@ public:
   void Operate(tensorflow::OpKernelContext* context,
                const tensorflow::Tensor& x,
                tensorflow::Tensor* y) {
-    // Flat views into the input and output tensors
-    auto x_flat = x.flat<T>();
-    auto y_flat = y->flat<T>();
-
-    // Compute logits from probabilities
-    const auto n = x_flat.size();
-    typename std::remove_const<decltype(n)>::type i;
-    T p;
-    for (i = 0; i < n; ++i) {
-      p = x_flat(i);
-      y_flat(i) = log(p / (1.0 - p));
-    }
+    functor::Logit<T> functor;
+    functor(x.flat<T>(), y->flat<T>());
   }
 };
 
-template<typename T>
+template <typename T>
 class LogitGradOp : public tensorflow::BinaryElementWiseOp<T, LogitGradOp<T>> {
 public:
   using tensorflow::BinaryElementWiseOp<T, LogitGradOp<T>>::BinaryElementWiseOp;
@@ -71,19 +95,8 @@ public:
                const tensorflow::Tensor& x,
                const tensorflow::Tensor& dz_dy,
                tensorflow::Tensor* dz_dx) {
-    // Flat views into the input and output tensors
-    auto x_flat = x.flat<T>();
-    auto dz_dy_flat = dz_dy.flat<T>();
-    auto dz_dx_flat = dz_dx->flat<T>();
-
-    // Compute back propagated gradients
-    const auto n = x_flat.size();
-    typename std::remove_const<decltype(n)>::type i;
-    T p;
-    for (i = 0; i < n; ++i) {
-      p = x_flat(i);
-      dz_dx_flat(i) = dz_dy_flat(i) / (p * (1.0 - p));
-    }
+    functor::LogitGrad<T> functor;
+    functor(x.flat<T>(), dz_dy.flat<T>(), dz_dx->flat<T>());
   }
 };
 

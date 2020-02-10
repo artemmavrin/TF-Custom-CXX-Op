@@ -7,18 +7,19 @@ PIP_INSTALL = $(PIP) install -U
 TF_CFLAGS = $(shell $(PYTHON) -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))')
 CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic -shared -undefined dynamic_lookup -fPIC $(TF_CFLAGS) -O2
 
+LIBRARIES = _logit.so
 
-.PHONY: all clean cxx_info py_info tensorflow test
+.PHONY: all clean cxx_info py_info test tf_info
 
-all: clean py_info tensorflow cxx_info _logit.so test
+all: clean tf_info cxx_info test
 
-_logit.so: logit.cc
-	$(CXX) $(CXXFLAGS) -o $@ $^
+_%.so: %.cc
+	$(CXX) $(CXXFLAGS) -o $@ $<
 
-test: _logit.so
+test: $(LIBRARIES)
 	$(PYTHON) -m unittest discover --pattern '*test.py' --verbose
 
-tensorflow: py_info
+tf_info: py_info
 	$(PIP_INSTALL) pip setuptools wheel
 	$(PIP_INSTALL) -r requirements.txt
 	@ echo "Using TensorFlow $$($(PYTHON) -c 'import tensorflow as tf; print(tf.__version__)')"
@@ -30,4 +31,4 @@ cxx_info:
 	$(CXX) --version
 
 clean:
-	rm -f _logit.so
+	rm -f *.so

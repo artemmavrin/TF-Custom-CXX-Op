@@ -5,7 +5,12 @@ PIP_INSTALL = $(PIP) install -U
 
 # C++ setup
 TF_CFLAGS = $(shell $(PYTHON) -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))')
-CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic -shared -undefined dynamic_lookup -fPIC $(TF_CFLAGS) -O2
+CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic -shared -fPIC $(TF_CFLAGS) -O2
+ifneq ($(OS), Windows_NT)
+  ifeq ($(shell uname -s), Darwin)
+    CXXFLAGS += -undefined dynamic_lookup
+  endif
+endif
 
 LIBRARIES = _logit.so
 

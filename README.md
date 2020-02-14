@@ -1,6 +1,6 @@
 # TensorFlow Custom C++ Op
 
-
+![Build](https://github.com/artemmavrin/TF-Custom-CXX-Op/workflows/Build/badge.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/artemmavrin/TF-Custom-CXX-Op/master "Last Commit")
 ![License](https://img.shields.io/github/license/artemmavrin/TF-Custom-CXX-Op "License")
 

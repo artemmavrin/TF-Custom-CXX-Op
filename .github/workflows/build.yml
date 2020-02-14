@@ -1,0 +1,30 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest]
+        python-version: [3.6, 3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Python information/TensorFlow install
+      run: |
+        make tf_info
+    - name: C++ information
+      run: |
+        make cxx_info
+    - name: Compile _logit.so
+      run: |
+        make _logit.so
+    - name: Run tests
+      run: |
+        make test

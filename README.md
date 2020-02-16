@@ -1,8 +1,8 @@
 # TensorFlow Custom C++ Op
 
-![Build](https://github.com/artemmavrin/TF-Custom-CXX-Op/workflows/Build/badge.svg)
-![Last Commit](https://img.shields.io/github/last-commit/artemmavrin/TF-Custom-CXX-Op/master "Last Commit")
-![License](https://img.shields.io/github/license/artemmavrin/TF-Custom-CXX-Op "License")
+[![Build](https://github.com/artemmavrin/TF-Custom-CXX-Op/workflows/Build/badge.svg "Build")](https://github.com/artemmavrin/TF-Custom-CXX-Op/actions?query=workflow%3ABuild)
+[![Last Commit](https://img.shields.io/github/last-commit/artemmavrin/TF-Custom-CXX-Op/master "Last Commit")](https://github.com/artemmavrin/TF-Custom-CXX-Op)
+[![License](https://img.shields.io/github/license/artemmavrin/TF-Custom-CXX-Op "License")](https://github.com/artemmavrin/TF-Custom-CXX-Op/blob/master/LICENSE)
 
 **This Repo Is Under Construction**
 
@@ -49,7 +49,8 @@ This project was tested to work with the following setup.
 ## TODO
 
 - [ ] Add documentation.
-- [ ] Test on Linux/Windows.
+- [x] Test on Linux.
+- [ ] Test on Windows.
 - [ ] Create pip-installable package.
 - [ ] Register gradient directly in C++.
 - [ ] Make a GPU op.

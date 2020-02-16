@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 
-_logit_module = tf.load_op_library('_logit.so')
+_logit_module = tf.load_op_library('./_logit.so')
 logit = _logit_module.logit
 
 

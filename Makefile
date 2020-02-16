@@ -5,7 +5,8 @@ PIP_INSTALL = $(PIP) install -U
 
 # C++ setup
 TF_CFLAGS = $(shell $(PYTHON) -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))')
-CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic -shared -fPIC $(TF_CFLAGS) -O2
+TF_LFLAGS = $(shell $(PYTHON) -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))')
+CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic -shared -fPIC $(TF_CFLAGS) $(TF_LFLAGS) -O2
 ifneq ($(OS), Windows_NT)
   ifeq ($(shell uname -s), Darwin)
     CXXFLAGS += -undefined dynamic_lookup
@@ -19,7 +20,7 @@ LIBRARIES = _logit.so
 all: clean tf_info cxx_info test
 
 _%.so: %.cc
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(CXX) $< -o $@ $(CXXFLAGS)
 
 test: $(LIBRARIES)
 	$(PYTHON) -m unittest discover --pattern '*test.py' --verbose

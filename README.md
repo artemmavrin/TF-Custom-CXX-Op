@@ -36,16 +36,6 @@ For example, in a Python REPL:
 <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
 ```
 
-
-## Requirements
-
-This project was tested to work with the following setup.
- 
-* macOS 10.15.3
-* Clang 11.0.0
-* Python 3.7.2
-* TensorFlow 2.1
-
 ## TODO
 
 - [ ] Add documentation.

@@ -1,0 +1,13 @@
+.dockerignore
+.git
+.github
+.gitignore
+.idea
+.vscode
+venv
+Dockerfile
+LICENSE
+**/__pycache__
+**/*.so
+**/*.code-workspace
+**/*.egg-info

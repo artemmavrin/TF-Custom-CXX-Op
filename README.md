@@ -23,15 +23,15 @@ cd TF-Custom-CXX-Op
 make
 ```
 
-Running `make` will download the required Python packages and compile [`logit.cc`](logit.cc) into the shared library file `_logit.so`.
-This shared library is loaded by [`logit.py`](logit.py) to expose the op in Python.
-Running `make` also runs the unit tests in [`logit_test.py`](logit_test.py).
+Running `make` will download the required Python dependencies, install the `tf_custom_cxx_op` Python package, and compile the C++ op.
+It will also run the unit tests.
+These steps can be done separately using `make install` (to install dependencies and the Python package), `make build` (to compile the C++ op), and `make test` (to run the unit tests).
 
 Using the `logit` TensorFlow op in Python is then easy.
 For example, in a Python REPL:
 
 ```python
->>> from logit import logit
+>>> from tf_custom_cxx_op import logit
 >>> logit(0.5)  # Accepts a tensor of any shape
 <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
 ```
@@ -39,9 +39,10 @@ For example, in a Python REPL:
 ## TODO
 
 - [ ] Add documentation.
+- [x] Test on macOS.
 - [x] Test on Linux.
 - [ ] Test on Windows.
-- [ ] Create pip-installable package.
+- [x] Create pip-installable package.
 - [ ] Register gradient directly in C++.
 - [ ] Make a GPU op.
 

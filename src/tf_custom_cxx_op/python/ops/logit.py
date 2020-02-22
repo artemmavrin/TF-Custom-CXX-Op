@@ -14,21 +14,26 @@
 # ==============================================================================
 """Logit (inverse sigmoid) op definition."""
 
+import pathlib
+
 import tensorflow as tf
 
-_logit_module = tf.load_op_library('./_logit.so')
+_THIS_DIRECTORY = pathlib.Path(__file__).parent
+_LOGIT_LIB = str(_THIS_DIRECTORY / '_logit_ops.so')
+
+_logit_module = tf.load_op_library(_LOGIT_LIB)
 logit = _logit_module.logit
 
 
 @tf.RegisterGradient("Logit")
 def _logit_grad(op, grad):
-  """Gradient for the Logit op.
+    """Gradient for the Logit op.
 
-  Args:
-    op: An `Operation`. The Logit operation being differentiated.
-    grad: A `Tensor`. A gradient with respect to the output of the Logit op.
+    Args:
+      op: An `Operation`. The Logit operation being differentiated.
+      grad: A `Tensor`. A gradient with respect to the output of the Logit op.
 
-  Returns:
-    A `Tensor`. The gradient with respect to the input of the Logit op.
-  """
-  return _logit_module.logit_grad(op.inputs[0], grad)
+    Returns:
+      A `Tensor`. The gradient with respect to the input of the Logit op.
+    """
+    return _logit_module.logit_grad(op.inputs[0], grad)

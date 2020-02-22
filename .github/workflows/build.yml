@@ -16,15 +16,12 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Python information/TensorFlow install
+    - name: Install dependencies and Python package
       run: |
-        make tf_info
-    - name: C++ information
+        make install
+    - name: Compile libraries
       run: |
-        make cxx_info
-    - name: Compile _logit.so
-      run: |
-        make _logit.so
+        make build
     - name: Run tests
       run: |
         make test

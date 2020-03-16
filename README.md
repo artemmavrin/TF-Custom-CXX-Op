@@ -1,6 +1,6 @@
 # TensorFlow Custom C++ Op
 
-[![Build](https://github.com/artemmavrin/TF-Custom-CXX-Op/workflows/Build/badge.svg "Build")](https://github.com/artemmavrin/TF-Custom-CXX-Op/actions?query=workflow%3ABuild)
+[![Build](https://github.com/artemmavrin/TF-Custom-CXX-Op/workflows/Build/badge.svg "Build")](https://github.com/artemmavrin/TF-Custom-CXX-Op/actions)
 [![Last Commit](https://img.shields.io/github/last-commit/artemmavrin/TF-Custom-CXX-Op/master "Last Commit")](https://github.com/artemmavrin/TF-Custom-CXX-Op)
 [![License](https://img.shields.io/github/license/artemmavrin/TF-Custom-CXX-Op "License")](https://github.com/artemmavrin/TF-Custom-CXX-Op/blob/master/LICENSE)
 
@@ -34,6 +34,10 @@ For example, in a Python REPL:
 >>> from tf_custom_cxx_op import logit
 >>> logit(0.5)  # Accepts a tensor of any shape
 <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
+>>> logit([0.0, 0.25, 0.5, 0.75, 1.0])
+<tf.Tensor: shape=(5,), dtype=float32, numpy=
+array([      -inf, -1.0986123,  0.       ,  1.0986123,        inf],
+      dtype=float32)>
 ```
 
 ## TODO

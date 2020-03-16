@@ -14,11 +14,10 @@ ifneq ($(OS), Windows_NT)
 endif
 
 # Project directories and files
-PACKAGE_DIR = src/tf_custom_cxx_op
-PYTHON_DIR = $(PACKAGE_DIR)/python
-CXX_DIR = $(PACKAGE_DIR)/cc
-LOGIT_TARGET_LIB = $(PYTHON_DIR)/ops/_logit_ops.so
-LOGIT_SRCS = $(CXX_DIR)/kernels/logit_kernels.cc $(CXX_DIR)/ops/logit_ops.cc
+PYTHON_DIR = src/python/tf_custom_cxx_op
+CXX_DIR = src/cc
+LOGIT_TARGET_LIB = $(PYTHON_DIR)/_logit.so
+LOGIT_SRCS = $(CXX_DIR)/logit.cc
 
 # Docker setup
 DOCKER_BUILD = docker build -t
@@ -39,13 +38,13 @@ install: py_info
 build: $(LOGIT_TARGET_LIB)
 
 test:
-	$(PYTHON) -m unittest discover $(PACKAGE_DIR) --verbose
+	$(PYTHON) -m unittest discover ./tests --verbose
 
 py_info:
 	@ echo "Using $$($(PYTHON) --version) at $$(which $(PYTHON))"
 
 clean:
-	rm -f $(PACKAGE_DIR)/python/ops/*.so
+	rm -f $(PYTHON_DIR)/*.so
 
 docker-build:
 	$(DOCKER_BUILD) $(DOCKER_IMAGE) .
